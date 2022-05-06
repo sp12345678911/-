@@ -1,9 +1,9 @@
-from asyncore import read
 import pandas as pd
 from reptile import Reptile
+import asyncio
 
 
-reptile=Reptile()
+
 class Excel : 
     def __init__(self):
         pass
@@ -16,12 +16,14 @@ class Excel :
             
     def read(self,sheet):
         sheet_max_row,sheet_max_column=sheet.shape
+        
         for i in range(sheet_max_row):
             if str(sheet.iloc[i][1]) == "nan":
                 pass
             else:
-                print(reptile.get_price(sheet.iloc[i][1]))
-            # print(sheet.iloc[i][1]) # get URL
+                reptile=Reptile(sheet.iloc[i][1])
+                print(asyncio.run(reptile.get_price(sheet.iloc[i][1])))
+        #print(sheet.iloc[i][1]) # get URL
     
     async def write(self) -> None:
         test=reptile.get_price('https://www.alternate.de/Corsair/DIMM-16-GB-DDR4-3600-Kit-Arbeitsspeicher/html/product/1713319')
