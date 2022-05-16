@@ -22,7 +22,7 @@ class Reptile:
         return r
     
     def get_price(self,url:str) -> str:
-        results = asession.run(self.get_amazon())
+        results = asession.run(self.get_amazon)
         for result in results:
             pricce=result.html.find(self.price_class_table.get(url.split("/")[2]),first=True).text
             print(pricce)
