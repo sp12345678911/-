@@ -1,14 +1,24 @@
 from requests_html import AsyncHTMLSession
 import asyncio
+
 asession = AsyncHTMLSession()
 class Reptile:
     def __init__(self,url:str) -> None:
         self.url=url
-        self.price_class_table={
-            'www.amazon.com' : '.a-price',
-            'www.alternate.de' : 'price',
-            'www.newegg.com':'price-current'
-        }
+        self.url_dict={
+            'www.amazon.com' : {
+                'class_name':'.a-price',
+                'use_function':self.get_amazon
+                },
+            'www.alternate.de' :{
+                'class_name':'price',
+                'use_function':self.get_alternate
+                },
+            'www.newegg.com':{
+                'class_name':'price-current',
+                'use_function':self.get_newegg
+                },
+            }
         self.web_header={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
             'Accept': '*/*',
@@ -16,20 +26,37 @@ class Reptile:
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
             'Cookie': 'session-id=138-8109177-6343214; Domain=.amazon.com; Expires=Sat, 06-May-2023 06:01:04 GMT; Path=/; Secure, session-id-time=2082787201l; Domain=.amazon.com; Expires=Sat, 06-May-2023 06:01:04 GMT; Path=/; Secure, i18n-prefs=USD; Domain=.amazon.com; Expires=Sat, 06-May-2023 06:01:04 GMT; Path=/, sp-cdn="L5Z9:TW"; Version=1; Domain=.amazon.com; Max-Age=31536000; Expires=Sat, 06-May-2023 06:01:04 GMT; Path=/; Secure; HttpOnly, skin=noskin; path=/; domain=.amazon.com',
-            'TE': 'Trailers'}
+            'TE': 'Trailers',
+            }
+    
     async def get_amazon(self):
         r = await asession.get(self.url,headers=self.web_header)
         return r
     
-    def get_price(self,url:str) -> str:
-        results = asession.run(self.get_amazon)
+    async def get_alternate(self):
+        r = await asession.get(self.url)
+        print(r)
+        return r
+    
+    async def get_newegg(self):
+        r = await asession.get(self.url)
+        print(r.text)
+        return r
+    
+    def get_price(self) -> str:
+        # 網站選擇
+        item = self.url_dict.get(self.url.split("/")[2])
+        usefunction=item.get("use_function")
+        results = asession.run(usefunction)
+
         for result in results:
-            pricce=result.html.find(self.price_class_table.get(url.split("/")[2]),first=True).text
-            print(pricce)
+            print(result.html.find(item.get('class_name'),first=True))
+            # pricce=result.html.find(item.get('class_name'),first=True).text
+            # print(pricce)
 
 if __name__ == '__main__':
-    reptile=Reptile('https://www.amazon.com/Thermaltake-TOUGHRAM-Motherboard-Syncable-R016D408GX2-3600C18A/dp/B08XWK554J/ref=sr_1_3?crid=1WCLJPD9DV8ER&dchild=1&keywords=toughram+xg+rgb&qid=1615956921&sprefix=toughram+XG%2Caps%2C347&sr=8-3')
-    reptile.get_price('https://www.amazon.com/Thermaltake-TOUGHRAM-Motherboard-Syncable-R016D408GX2-3600C18A/dp/B08XWK554J/ref=sr_1_3?crid=1WCLJPD9DV8ER&dchild=1&keywords=toughram+xg+rgb&qid=1615956921&sprefix=toughram+XG%2Caps%2C347&sr=8-3')
+    reptile=Reptile('https://www.alternate.de/Thermaltake/DIMM-16-GB-DDR4-3200-Kit-Arbeitsspeicher/html/product/1588667')
+    reptile.get_price()
 
 
 
