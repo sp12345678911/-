@@ -6,16 +6,20 @@ class Reptile:
     def __init__(self,url:str) -> None:
         self.url=url
         self.url_dict={
+            'www.amazon.de' : {
+                'class_name':'.a-price',
+                'use_function':self.get_amazon
+                },
             'www.amazon.com' : {
                 'class_name':'.a-price',
                 'use_function':self.get_amazon
                 },
             'www.alternate.de' :{
-                'class_name':'price',
+                'class_name':'.price',
                 'use_function':self.get_alternate
                 },
             'www.newegg.com':{
-                'class_name':'price-current',
+                'class_name':'.price-current',
                 'use_function':self.get_newegg
                 },
             }
@@ -31,16 +35,17 @@ class Reptile:
     
     async def get_amazon(self):
         r = await asession.get(self.url,headers=self.web_header)
+        print('amazon')
         return r
     
     async def get_alternate(self):
         r = await asession.get(self.url)
-        print(r)
+        print('alternate')
         return r
     
     async def get_newegg(self):
         r = await asession.get(self.url)
-        print(r.text)
+        print('newegg')
         return r
     
     def get_price(self) -> str:
@@ -50,31 +55,12 @@ class Reptile:
         results = asession.run(usefunction)
 
         for result in results:
-            print(result.html.find(item.get('class_name'),first=True))
-            # pricce=result.html.find(item.get('class_name'),first=True).text
-            # print(pricce)
+            try:
+                print(result.html.find(item.get('class_name'),first=True).text)
+            except AttributeError:
+                print("此為空值")
+                print(self.url)
 
 if __name__ == '__main__':
-    reptile=Reptile('https://www.alternate.de/Thermaltake/DIMM-16-GB-DDR4-3200-Kit-Arbeitsspeicher/html/product/1588667')
+    reptile=Reptile('https://www.amazon.com/Crucial-Ballistix-Desktop-Gaming-BL2K8G32C16U4B/dp/B083V93HJG/ref=sr_1_1?dchild=1&keywords=Crucial%2BBallistix%2B3200&qid=1613615768&s=electronics&sr=1-1&th=1%20')
     reptile.get_price()
-
-
-
-
-
-    # with open('output.csv','w', newline='') as csvfile:
-    #     writer = csv.writer(csvfile)
-    #     for url in urls:
-    #         driver.get(url)
-    #         # search = driver.find_element_by_class_name("shopee-searchbar-input__input")
-    #         # search.send_keys("彼特必")
-    #         # search.send_keys(Keys.RETURN)
-    #         time.sleep(5)
-    #         productTitle=driver.find_element_by_id("productTitle")
-    #         titles = driver.find_element_by_class_name("a-text-price")
-    #         # for title in titles:
-    #         print(titles.text)
-    #         # 寫入csv
-    #         writer.writerow([productTitle.text, titles.text])
-    #         time.sleep(1)
-    #         # 開啟輸出的 CSV 檔案
