@@ -1,6 +1,6 @@
 import pandas as pd
 from reptile import Reptile
-import asyncio
+from datetime import date
 
 
 
@@ -15,17 +15,20 @@ class Excel :
             
     def read(self,sheet)->None:
         sheet_max_row,sheet_max_column=sheet.shape
-        for i in range(sheet_max_row):
-            target = sheet.iloc[i][1]
-            if str(target) == "nan":
-                pass
-            else:
-                reptile=self.reptile(target)
-                reptile.get_price()
+        if sheet.iloc[0][sheet_max_column-1] == date.today():
+            for i in range(sheet_max_row):
+                target_url = sheet.iloc[i][1]
+                if str(target_url) == "nan":
+                    pass
+                else:
+                    reptile=self.reptile(target_url)
+                    reptile.get_price()
+        else:
+          print('今天已經更新過了唷')
+
     
     async def write(self) -> None:
-        test=self.reptile.get_price('https://www.alternate.de/Corsair/DIMM-16-GB-DDR4-3600-Kit-Arbeitsspeicher/html/product/1713319')
-        await print("test",test)
+        pass
 
 if __name__ == "__main__":
     excel=Excel()
