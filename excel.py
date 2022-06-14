@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import pandas as pd
 from reptile import Reptile
 from datetime import date
@@ -7,28 +8,37 @@ from datetime import date
 class Excel : 
     def __init__(self):
         self.reptile=Reptile
-    
-    def start(self):
-        dfs = pd.read_excel("DRAM Price Watch List_20220429.xlsx",sheet_name=None)
-        for df in dfs:
-            self.read(dfs.get(df))
-            
-    def read(self,sheet)->None:
-        sheet_max_row,sheet_max_column=sheet.shape
-        if sheet.iloc[0][sheet_max_column-1] == date.today():
-            for i in range(sheet_max_row):
-                target_url = sheet.iloc[i][1]
-                if str(target_url) == "nan":
-                    pass
-                else:
-                    reptile=self.reptile(target_url)
-                    reptile.get_price()
-        else:
-          print('今天已經更新過了唷')
 
+    def start(self):
+        sheets = pd.read_excel("DRAM Price Watch List_20220429.xlsx",sheet_name=None)
+        for item in sheets:
+            sheet=sheets.get(item)
+            if str(sheet.iloc[0][-1]) == str(date.today())+' 00:00:00':
+                print('sheet',item,'今天已經更新過了唷')
+            else:
+                sheet_list=self.to_list(sheet)
+                self.read(sheet_list)
     
-    async def write(self) -> None:
+    def to_list(self,sheet)->list:
+        return pd.DataFrame(sheet.values.tolist())
+
+    def read(self,sheet_list)->None:
+        sheet_max_row,sheet_max_column=sheet_list.shape
+        price_list=[]
+        for i in range(sheet_max_row):
+            url=sheet_list[1][i]
+            if str(url) == 'nan':
+                price_list.append("此為空值")
+            else:
+                reptile=self.reptile(sheet_list[1][i])
+                price_list.append(reptile.get_price())
+        sheet_list.insert(sheet_max_column,str(date.today()),price_list)
+        sheet_list.to_excel('output.xlsx')
+    def export_xlsx(self,sheet_list)->None:
         pass
+        # with pd.ExcelWriter('output.xlsx') as writer:  
+        #     export.to_excel(writer, sheet_name='Sheet_name_1')
+        #     export.to_excel(writer, sheet_name='Sheet_name_2')
 
 if __name__ == "__main__":
     excel=Excel()
