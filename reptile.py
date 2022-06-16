@@ -52,7 +52,6 @@ class Reptile:
         results = asession.run(usefunction)
         for result in results:
             try:
-                print(result.text)
                 print(result.html.find(item.get('class_name'),first=True).text)
                 return(result.html.find(item.get('class_name'),first=True).text)
             except AttributeError:
